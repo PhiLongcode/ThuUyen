@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎀 Theo dõi đơn hàng dễ thương</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #f7f0ff, #ffe6f0);
+      margin: 0;
+      padding: 0;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 90%;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 25px rgba(255,105,180,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    h1 {
+      text-align: center;
+      color: #ff69b4;
+      margin-bottom: 25px;
+      font-size: 2.2em;
+    }
+    input {
+      width: calc(100% - 24px);
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #ffb6c1;
+      margin-top: 20px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    input:focus {
+      outline: none;
+      border-color: #ff69b4;
+      box-shadow: 0 0 0 3px rgba(255,105,180,0.2);
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      background-color: #ff69b4;
+      color: white;
+      font-size: 18px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 4px 10px rgba(255,105,180,0.3);
+    }
+    button:hover {
+      background-color: #ff1493;
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 5px rgba(255,105,180,0.4);
+    }
+    .result {
+      margin-top: 30px;
+      padding: 25px;
+      background-color: #fff0f5;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(255,105,180,0.15);
+      display: none;
+      border: 1px solid #ffd1dc;
+    }
+    .result h3 {
+        color: #ff69b4;
+        margin-bottom: 15px;
+    }
+    .result p {
+        margin: 10px 0;
+        line-height: 1.6;
+    }
+    .result strong {
+        color: #ff85a2;
+    }
+    .cute-icon {
+      width: 70px;
+      position: absolute;
+      top: -35px;
+      right: -35px;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .timeline {
+      margin-top: 20px;
+      list-style-type: none;
+      padding: 0;
+    }
+    .timeline li {
+      margin: 12px 0;
+      padding-left: 30px;
+      position: relative;
+      font-size: 0.95em;
+    }
+    .timeline li::before {
+      content: '📍';
+      position: absolute;
+      left: 0;
+      font-size: 1.2em;
+      top: -2px;
+    }
+    #sender.not-found {
+        color: #e65100;
+        font-weight: bold;
+        text-align: center;
+        display: block;
+        padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="cute-icon" alt="Ribbon Icon">
+    <h1>📦 Theo dõi đơn hàng</h1>
+    <input type="text" id="trackingInput" placeholder="Nhập mã vận đơn (VD: NA001)">
+    <button onclick="trackOrder()">Xem thông tin</button>
+    <div class="result" id="result">
+      <h3>Thông tin đơn hàng:</h3>
+      <p><strong>Người gửi:</strong> <span id="sender"></span></p>
+      <p><strong>Người nhận:</strong> <span id="receiver"></span></p>
+      <p><strong>Khoảng cách:</strong> <span id="distance"></span></p>
+      <p><strong>Trạng thái:</strong> <span id="status"></span></p>
+      <p><strong>COD:</strong> <span id="cod"></span></p>
+      <p><strong>Phí vận chuyển:</strong> <span id="shipping"></span></p>
+      <h4>🚚 Hành trình:</h4>
+      <ul class="timeline" id="timeline"></ul>
+    </div>
+  </div>
+
+  <script>
+    const data = {
+      'ABC123': {
+        sender: 'Nguyễn A - TP.HCM',
+        receiver: 'Trần B - Hà Nội',
+        distance: '1.150 km',
+        status: 'Đã giao thành công 🎉',
+        journey: [
+          '2025-06-25 09:00 - Lấy hàng tại shop (TP.HCM)',
+          '2025-06-25 11:00 - Rời kho TP.HCM (Kho Q.Tân Bình)',
+          '2025-06-26 08:00 - Đang giao hàng (Khu vực Hà Nội)',
+          '2025-06-26 14:30 - Đã giao thành công (Hà Nội, Cầu Giấy)'
+        ],
+        cod: 'COD: 750.000đ',
+        shipping: 'Phí vận chuyển: 50.000đ'
+      },
+      'XYZ789': {
+        sender: 'Lê C - Đà Nẵng',
+        receiver: 'Phạm D - Huế',
+        distance: '110 km',
+        status: 'Đang giao hàng 🚚',
+        journey: [
+          '2025-06-24 10:30 - Lấy hàng tại shop (Đà Nẵng)',
+          '2025-06-24 12:00 - Rời kho Đà Nẵng (Kho Liên Chiểu)',
+          '2025-06-25 09:00 - Đang giao hàng (TP. Huế)'
+        ],
+        cod: 'COD: 220.000đ',
+        shipping: 'Phí vận chuyển: 25.000đ'
+      },
+      'NA001': {
+        sender: 'Shop Hoa Hồng - Q1, HCM',
+        receiver: 'Ngọc Anh - 246 Đinh Bộ Lĩnh, P.26, Bình Thạnh, HCM\nSĐT: 0857968685',
+        distance: '5 km',
+        status: 'Đang chuẩn bị hàng 🍰',
+        journey: [
+          '2025-06-21 10:00 - Đã tạo đơn hàng (Kho Q1)',
+          '2025-06-21 12:00 - Đang đóng gói sản phẩm (Kho Q1)'
+        ],
+        cod: 'COD: 100.000đ',
+        shipping: 'Phí vận chuyển: 15.000đ'
+      },
+      'NA002': {
+        sender: 'Mỹ phẩm Hàn - Q5, HCM',
+        receiver: 'Ngọc Anh - 246 Đinh Bộ Lĩnh, P.26, Bình Thạnh, HCM\nSĐT: 0857968685',
+        distance: '7.5 km',
+        status: 'Đang giao hàng 🚚',
+        journey: [
+          '2025-06-22 08:00 - Đã tạo đơn (Kho Q5)',
+          '2025-06-22 10:00 - Đã rời kho (Kho Q5)',
+          '2025-06-23 09:00 - Đang giao hàng (Khu vực Bình Thạnh)'
+        ],
+        cod: 'COD: 350.000đ',
+        shipping: 'Phí vận chuyển: 25.000đ'
+      },
+      'NA003': {
+        sender: 'Thời Trang mẹ và bé - Gò Vấp, HCM',
+        receiver: 'Uyên Thu - 246 Đinh Bộ Lĩnh, P.26, Bình Thạnh, HCM\nSĐT: 0857968685',
+        distance: '12 km',
+        status: 'Đã giao thành công ✅',
+        journey: [
+          '2025-06-20 09:00 - Đã tạo đơn (Kho Gò Vấp)',
+          '2025-06-20 11:00 - Rời kho Gò Vấp',
+          '2025-06-21 10:00 - Đã giao thành công (Bình Thạnh, Đinh Bộ Lĩnh)'
+        ],
+cod: 'COD: 520.000đ',
+        shipping: 'Phí vận chuyển: 30.000đ'
+      },
+      'NA004': {
+        sender: 'Sách Online - Tân Bình',
+        receiver: 'Văn An - Quận 2, HCM\nSĐT: 0857968685',
+        distance: '9 km',
+        status: 'Đơn bị huỷ ❌',
+        journey: [
+          '2025-06-22 14:00 - Đã tạo đơn (Kho Tân Bình)',
+          '2025-06-22 15:00 - Huỷ bởi người bán (Hệ thống)'
+        ],
+        cod: 'COD: 120.000đ',
+        shipping: 'Phí vận chuyển: 20.000đ'
+      },
+      // === Thêm mã giả lập mới ===
+      'TPHCM001': {
+        sender: 'Điện tử Thông Minh - Q1, HCM',
+        receiver: 'Nguyễn Văn C - 300 Lý Thường Kiệt, Q.10, HCM\nSĐT: 0901234567',
+        distance: '8 km',
+        status: 'Đang giao hàng 🛵',
+        journey: [
+          '2025-06-24 10:00 - Đã tạo đơn hàng (Kho Q1)',
+          '2025-06-24 11:30 - Đang đóng gói sản phẩm',
+          '2025-06-24 13:00 - Đã xuất kho (Kho Q1)',
+          '2025-06-24 15:00 - Đang giao hàng (Đường Lý Thường Kiệt)'
+        ],
+        cod: 'COD: 1.200.000đ',
+        shipping: 'Phí vận chuyển: 20.000đ'
+      },
+      'HN002': {
+        sender: 'Thực phẩm Sạch - Ba Đình, HN',
+        receiver: 'Lê Thị F - 15 Hai Bà Trưng, Hoàn Kiếm, HN\nSĐT: 0987654321',
+        distance: '6 km',
+        status: 'Đã giao thành công ✅',
+        journey: [
+          '2025-06-23 09:00 - Đã tạo đơn hàng (Kho Ba Đình)',
+          '2025-06-23 10:00 - Đang đóng gói (Kho Ba Đình)',
+          '2025-06-23 11:00 - Đã xuất kho (Hoàn Kiếm)',
+          '2025-06-23 14:00 - Đã giao thành công (15 Hai Bà Trưng)'
+        ],
+        cod: 'COD: 300.000đ',
+        shipping: 'Phí vận chuyển: 18.000đ'
+      },
+      'DN003': {
+        sender: 'Cây cảnh Mini - Sơn Trà, ĐN',
+        receiver: 'Phạm Văn G - 50 Ngũ Hành Sơn, Ngũ Hành Sơn, ĐN\nSĐT: 0777888999',
+        distance: '10 km',
+        status: 'Đang chuẩn bị hàng 🌱',
+        journey: [
+          '2025-06-25 08:30 - Đã tạo đơn hàng (Kho Sơn Trà)',
+          '2025-06-25 09:00 - Xác nhận đơn hàng'
+        ],
+        cod: 'COD: 50.000đ',
+        shipping: 'Phí vận chuyển: 15.000đ'
+      },
+      'VT004': {
+        sender: 'Đồ ăn vặt - Vũng Tàu',
+        receiver: 'Trần Thị H - 100 Thùy Vân, TP. Vũng Tàu\nSĐT: 0911223344',
+        distance: '3 km',
+        status: 'Đã hủy đơn hàng ❌',
+        journey: [
+          '2025-06-24 11:00 - Đã tạo đơn hàng (Kho Vũng Tàu)',
+          '2025-06-24 11:30 - Người nhận yêu cầu hủy (Hệ thống)'
+        ],
+        cod: '-',
+        shipping: '-'
+      },
+      'QN005': {
+        sender: 'Đồ thủ công - Hội An, QN',
+        receiver: 'Hoàng Minh K - 20 Phan Chu Trinh, Tam Kỳ, QN\nSĐT: 0909090909',
+        distance: '45 km',
+status: 'Đang trên đường đến kho trung chuyển 🚛',
+        journey: [
+          '2025-06-24 16:00 - Đã tạo đơn hàng (Kho Hội An)',
+          '2025-06-24 17:00 - Đã lấy hàng',
+          '2025-06-24 18:30 - Đang chuyển đến kho trung chuyển (Đà Nẵng)'
+        ],
+        cod: 'COD: 400.000đ',
+        shipping: 'Phí vận chuyển: 35.000đ'
+      },
+      'VT6666': {
+        sender: 'Gốm Sứ Mỹ Nghệ - Bát Tràng, HN',
+        receiver: 'Phạm Thuỳ L - 789 Nguyễn Huệ, Quận 1, TP.HCM\nSĐT: 0888999000',
+        distance: '1.700 km',
+        status: 'Đang vận chuyển liên tỉnh✈️',
+        journey: [
+          '2025-06-24 10:00 - Đã tạo đơn hàng (Kho Bát Tràng)',
+          '2025-06-24 11:00 - Đã lấy hàng tại kho Bát Tràng',
+          '2025-06-24 14:00 - Đã chuyển đến sân bay Nội Bài (Hà Nội)',
+          '2025-06-24 18:00 - Đang bay vào TP.HCM',
+          '2025-06-25 08:00 - Dự kiến đến kho TP.HCM vào ngày mai'
+        ],
+        cod: 'COD: 1.500.000đ',
+        shipping: 'Phí vận chuyển: 120.000đ'
+      },
+      'HP7007': {
+        sender: 'Hải Sản Tươi Sống - Hải Phòng',
+        receiver: 'Nguyễn Thanh M - 12 Lê Hồng Phong, Ngô Quyền, HP\nSĐT: 0944556677',
+        distance: '15 km',
+        status: 'Đã giao hàng thành công ✅',
+        journey: [
+          '2025-06-23 07:00 - Đã tạo đơn hàng (Kho Hải Phòng)',
+          '2025-06-23 08:30 - Đã lấy hàng tại cảng (Hải Phòng)',
+          '2025-06-23 11:00 - Đang giao hàng (Khu vực Ngô Quyền)',
+          '2025-06-23 13:00 - Đã giao hàng thành công (12 Lê Hồng Phong)'
+        ],
+        cod: 'COD: 800.000đ',
+        shipping: 'Phí vận chuyển: 25.000đ'
+      },
+      'CT8008': {
+        sender: 'Trái Cây Miệt Vườn - Cần Thơ',
+        receiver: 'Phan Văn N - 25 Hùng Vương, Ninh Kiều, CT\nSĐT: 0789123456',
+        distance: '7 km',
+        status: 'Đang giao hàng 🥭',
+        journey: [
+          '2025-06-25 09:30 - Đã tạo đơn hàng (Kho Cần Thơ)',
+          '2025-06-25 10:00 - Đang đóng gói trái cây',
+          '2025-06-25 11:00 - Đã xuất kho (Khu vực Ninh Kiều)'
+        ],
+        cod: 'COD: 150.000đ',
+        shipping: 'Phí vận chuyển: 10.000đ'
+      },
+      'BD9009': {
+        sender: 'Nội Thất Gỗ - Bình Dương',
+        receiver: 'Lê Thúy O - Lô G, KCN VSIP, Thuận An, BD\nSĐT: 0933445566',
+        distance: '20 km',
+        status: 'Đang vận chuyển đồ cồng kềnh 🚚',
+        journey: [
+          '2025-06-22 14:00 - Đã tạo đơn hàng (Xưởng Bình Dương)',
+          '2025-06-22 15:00 - Đang kiểm tra chất lượng sản phẩm',
+          '2025-06-22 17:00 - Đã lên xe vận chuyển (Hướng KCN VSIP)'
+        ],
+        cod: 'COD: 5.000.000đ',
+        shipping: 'Phí vận chuyển: 200.000đ'
+      },
+      'HCM1010': {
+sender: 'Phụ kiện Điện thoại - Q.Phú Nhuận, HCM',
+        receiver: 'Trần Quang P - 100 CMT8, Q.3, HCM\nSĐT: 0966778899',
+        distance: '3 km',
+        status: 'Đang chuẩn bị hàng 📱',
+        journey: [
+          '2025-06-25 10:00 - Đã tạo đơn hàng (Kho Phú Nhuận)',
+          '2025-06-25 10:15 - Xác nhận đơn hàng và kiểm tra tồn kho'
+        ],
+        cod: 'COD: 80.000đ',
+        shipping: 'Phí vận chuyển: 12.000đ'
+      },
+      'HD1111': {
+        sender: 'Đồ gia dụng - Hải Dương',
+        receiver: 'Ngô Thanh Q - 55 Trần Hưng Đạo, TP Hải Dương\nSĐT: 0900112233',
+        distance: '18 km',
+        status: 'Đã đặt lịch giao hàng ✅',
+        journey: [
+          '2025-06-24 13:00 - Đã tạo đơn hàng (Kho Hải Dương)',
+          '2025-06-24 14:00 - Đã kiểm kê hàng hóa',
+          '2025-06-24 15:00 - Đã đóng gói hoàn tất',
+          '2025-06-25 09:00 - Chờ giao hàng theo lịch hẹn (55 Trần Hưng Đạo)'
+        ],
+        cod: 'COD: 950.000đ',
+        shipping: 'Phí vận chuyển: 30.000đ'
+      },
+      'LA1212': {
+        sender: 'Gạo Sạch - Long An',
+        receiver: 'Hoàng Văn R - 20 Hùng Vương, Tân An, Long An\nSĐT: 0707123123',
+        distance: '25 km',
+        status: 'Đang giao đến kho khu vực 🌾',
+        journey: [
+          '2025-06-25 07:00 - Đã tạo đơn hàng (Nông trại Long An)',
+          '2025-06-25 07:30 - Đã thu hoạch và đóng bao',
+          '2025-06-25 08:30 - Đang vận chuyển đến kho Tân An'
+        ],
+        cod: 'COD: 250.000đ',
+        shipping: 'Phí vận chuyển: 20.000đ'
+      },
+      'BG1313': {
+        sender: 'Vải may mặc - Bắc Giang',
+        receiver: 'Trần Thị S - 30 Hoàng Văn Thụ, TP Bắc Giang\nSĐT: 0868889999',
+        distance: '10 km',
+        status: 'Đơn hàng đang chờ xác nhận 🧵',
+        journey: [
+          '2025-06-25 11:00 - Đã tạo đơn hàng (Xưởng Bắc Giang)'
+        ],
+        cod: 'COD: 600.000đ',
+        shipping: 'Phí vận chuyển: 15.000đ'
+      },
+      'HP2024': {
+        sender: 'Sách Cũ & Mới - Hải Phòng',
+        receiver: 'Phạm Thị X - 88 Lạch Tray, Ngô Quyền, HP\nSĐT: 0922334455',
+        distance: '12 km',
+        status: 'Đang vận chuyển 📚',
+        journey: [
+          '2025-06-26 09:00 - Đã tạo đơn hàng (Kho sách HP)',
+          '2025-06-26 10:30 - Đang đóng gói sách',
+          '2025-06-26 12:00 - Đã rời kho (Phía Bến xe Niệm Nghĩa)',
+          '2025-06-26 14:00 - Đang giao hàng (Khu vực Lạch Tray)'
+        ],
+        cod: 'COD: 300.000đ',
+        shipping: 'Phí vận chuyển: 20.000đ'
+      },
+      'TPT3000': {
+        sender: 'Cửa Hàng Quà Tặng - Phan Thiết, BD',
+        receiver: 'Lý Văn Y - 10 Nguyễn Huệ, TP. Phan Thiết, BD\nSĐT: 0811223344',
+        distance: '5 km',
+        status: 'Đã giao thành công 🎉',
+        journey: [
+'2025-06-25 14:00 - Đã tạo đơn hàng (Cửa hàng quà tặng)',
+          '2025-06-25 15:00 - Đã lấy hàng',
+          '2025-06-25 16:30 - Đang giao hàng (Trung tâm Phan Thiết)',
+          '2025-06-25 17:00 - Đã giao thành công (10 Nguyễn Huệ)'
+        ],
+        cod: 'COD: 180.000đ',
+        shipping: 'Phí vận chuyển: 15.000đ'
+      },
+      'CM4567': {
+        sender: 'Đồ Dùng Học Tập - Cà Mau',
+        receiver: 'Trần Văn Z - 45 Đường 30/4, P.4, TP. Cà Mau\nSĐT: 0977889900',
+        distance: '9 km',
+        status: 'Đang chờ vận chuyển 📦',
+        journey: [
+          '2025-06-26 11:00 - Đã tạo đơn hàng (Kho Cà Mau)',
+          '2025-06-26 12:00 - Đang đóng gói sản phẩm'
+        ],
+        cod: 'COD: 90.000đ',
+        shipping: 'Phí vận chuyển: 10.000đ'
+      },
+      'LD8888': {
+        sender: 'Rau Sạch Đà Lạt - Lâm Đồng',
+        receiver: 'Nguyễn Thị V - 15 Hùng Vương, P.1, TP. Đà Lạt\nSĐT: 0919293949',
+        distance: '4 km',
+        status: 'Đang giao hàng 🌱',
+        journey: [
+          '2025-06-26 07:00 - Đã tạo đơn hàng (Vườn Đà Lạt)',
+          '2025-06-26 07:30 - Đã thu hoạch và sơ chế',
+          '2025-06-26 08:30 - Đang giao hàng (Khu vực trung tâm Đà Lạt)'
+        ],
+        cod: 'COD: 120.000đ',
+        shipping: 'Phí vận chuyển: 8.000đ'
+      },
+      'ND9999': {
+        sender: 'Quần Áo Trẻ Em - Nam Định',
+        receiver: 'Phạm Thị T - 20 Hàng Đồng, P. Vị Hoàng, TP. Nam Định\nSĐT: 0939876543',
+        distance: '7 km',
+        status: 'Đơn hàng chờ xử lý 👕',
+        journey: [
+          '2025-06-26 10:00 - Đã tạo đơn hàng (Kho Nam Định)'
+        ],
+        cod: 'COD: 250.000đ',
+        shipping: 'Phí vận chuyển: 15.000đ'
+      }
+    };
+
+    function trackOrder() {
+      const code = document.getElementById('trackingInput').value.trim().toUpperCase();
+      const info = data[code];
+      const result = document.getElementById('result');
+
+      document.getElementById('sender').textContent = '';
+      document.getElementById('receiver').textContent = '';
+      document.getElementById('distance').textContent = '';
+      document.getElementById('status').textContent = '';
+      document.getElementById('cod').textContent = '';
+      document.getElementById('shipping').textContent = '';
+      document.getElementById('timeline').innerHTML = '';
+      document.getElementById('sender').classList.remove('not-found');
+
+      if (info) {
+        document.getElementById('sender').textContent = info.sender;
+        document.getElementById('receiver').textContent = info.receiver;
+        document.getElementById('distance').textContent = info.distance;
+        document.getElementById('status').textContent = info.status;
+        document.getElementById('cod').textContent = info.cod || '-';
+        document.getElementById('shipping').textContent = info.shipping || '-';
+
+        const timeline = document.getElementById('timeline');
+        info.journey.forEach(step => {
+          const li = document.createElement('li');
+          li.textContent = step;
+          timeline.appendChild(li);
+        });
+
+        result.style.display = 'block';
+      } else {
+        document.getElementById('sender').textContent = 'Không tìm thấy mã đơn!';
+        document.getElementById('sender').classList.add('not-found');
+        document.getElementById('receiver').textContent = '-';
+        document.getElementById('distance').textContent = '-';
+        document.getElementById('status').textContent = '-';
+        document.getElementById('cod').textContent = '-';
+        document.getElementById('shipping').textContent = '-';
+        document.getElementById('timeline').innerHTML = '';
+        result.style.display = 'block';
+      }
+      document.getElementById('trackingInput').value = '';
+    }
+
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const codeFromURL = params.get('code');
+      const input = document.getElementById('trackingInput');
+
+      if (codeFromURL) {
+        input.value = codeFromURL.toUpperCase();
+        trackOrder();
+      } else if (input.value.trim() !== '') {
+        trackOrder();
+      }
+    };
+  </script>
+</body>
+</html>
